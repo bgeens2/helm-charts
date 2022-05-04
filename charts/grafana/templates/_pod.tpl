@@ -16,30 +16,6 @@ hostAliases:
 {{- if .Values.priorityClassName }}
 priorityClassName: {{ .Values.priorityClassName }}
 {{- end }}
-{{- if ( or .Values.persistence.enabled .Values.dashboards .Values.sidecar.notifiers.enabled .Values.extraInitContainers (and .Values.sidecar.datasources.enabled .Values.sidecar.datasources.initDatasources)) }}
-initContainers:
-{{- end }}
-{{- if ( and .Values.persistence.enabled .Values.initChownData.enabled ) }}
-  - name: init-chown-data
-    {{- if .Values.initChownData.image.sha }}
-    image: "{{ .Values.initChownData.image.repository }}:{{ .Values.initChownData.image.tag }}@sha256:{{ .Values.initChownData.image.sha }}"
-    {{- else }}
-    image: "{{ .Values.initChownData.image.repository }}:{{ .Values.initChownData.image.tag }}"
-    {{- end }}
-    imagePullPolicy: {{ .Values.initChownData.image.pullPolicy }}
-    securityContext:
-      runAsNonRoot: false
-      runAsUser: 0
-    command: ["chown", "-R", "{{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }}", "/var/lib/grafana"]
-    resources:
-{{ toYaml .Values.initChownData.resources | indent 6 }}
-    volumeMounts:
-      - name: storage
-        mountPath: "/var/lib/grafana"
-{{- if .Values.persistence.subPath }}
-        subPath: {{ .Values.persistence.subPath }}
-{{- end }}
-{{- end }}
 {{- if .Values.dashboards }}
   - name: download-dashboards
     {{- if .Values.downloadDashboardsImage.sha }}
